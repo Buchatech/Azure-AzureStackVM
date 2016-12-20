@@ -23,9 +23,6 @@
       "defaultValue": "NetSecGroup",
       "type": "String"
     },
-    "dnsNameForPublicIP": {
-      "type": "String"
-    },
     "virtualNetworkName": {
       "defaultValue": "VirtNet",
       "type": "String"
@@ -42,9 +39,6 @@
         "description": "Blob storage endpoint"
       }
     },
-    "StorageAccountName": {
-      "type": "String"
-    },
     "blobStorageEndpoint": {
       "type": "string",
       "allowedValues": [
@@ -56,13 +50,24 @@
       }
     },
     "vmSize": {
-      "type": "String"
+      "type": "String",
+      "allowedValues": [
+        "Standard_D1",
+        "Standard_D2",
+        "Standard_A1",
+        "Standard_A2"
+      ],
+      "metadata": {
+        "description": "VM size for Azure (Standard_D1, Standard_D2) or Azure Stack (Standard_A1,Standard_A2)"
+      }
     }
   },
   "variables": {
     "location": "[parameters('deploymentLocation')]",
     "vmSize": "[parameters('vmSize')]",
     "OSDiskName": "osdisk",
+    "dnsNameForPublicIP": "[parameters('vmName')]",
+    "StorageAccountName": "[concat(parameters('vmName'),'storage')]",
     "StorageAccountContainerName": "vhds"
   },
   "resources": [
@@ -87,7 +92,7 @@
             "name": "[parameters('vmName')]",
             "createOption": "FromImage",
             "vhd": {
-              "uri": "[concat('http://',parameters('StorageAccountName'),'.', parameters('blobStorageEndpoint'), '/', variables('StorageAccountContainerName'),'/',variables('OSDiskName'),'.vhd')]"
+              "uri": "[concat('http://',variables('StorageAccountName'),'.', parameters('blobStorageEndpoint'), '/', variables('StorageAccountContainerName'),'/',variables('OSDiskName'),'.vhd')]"
             },
             "caching": "ReadWrite"
           },
@@ -112,7 +117,7 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('StorageAccountName'))]",
         "[resourceId('Microsoft.Network/networkInterfaces', parameters('nicName'))]"
       ]
     },
@@ -130,7 +135,7 @@
               "privateIPAddress": "10.0.0.4",
               "privateIPAllocationMethod": "Dynamic",
               "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('dnsNameForPublicIP'))]"
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('dnsNameForPublicIP'))]"
               },
               "subnet": {
                 "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName')), '/subnets/default')]"
@@ -147,7 +152,7 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/publicIPAddresses', parameters('dnsNameForPublicIP'))]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('dnsNameForPublicIP'))]",
         "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
         "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
       ]
@@ -180,7 +185,7 @@
     {
       "comments": "Generalized from resource: '/subscriptions/7723dfc7-991a-4690-900c-4f52b81ebef5/resourceGroups/51316testrg/providers/Microsoft.Network/publicIPAddresses/51316testvm'.",
       "type": "Microsoft.Network/publicIPAddresses",
-      "name": "[parameters('dnsNameForPublicIP')]",
+      "name": "[variables('dnsNameForPublicIP')]",
       "apiVersion": "2015-05-01-preview",
       "location": "[variables('location')]",
       "properties": {
@@ -215,7 +220,7 @@
     {
       "comments": "Generalized from resource: '/subscriptions/7723dfc7-991a-4690-900c-4f52b81ebef5/resourceGroups/51316testrg/providers/Microsoft.Storage/storageAccounts/51316testrg6095'.",
       "type": "Microsoft.Storage/storageAccounts",
-      "name": "[parameters('StorageAccountName')]",
+      "name": "[variables('StorageAccountName')]",
       "apiVersion": "2015-06-15",
       "location": "[variables('location')]",
       "tags": { },
