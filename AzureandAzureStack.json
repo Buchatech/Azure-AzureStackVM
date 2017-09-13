@@ -42,7 +42,7 @@
     "blobStorageEndpoint": {
       "type": "string",
       "allowedValues": [
-        "blob.azurestack.local",
+        "blob.local.azurestack.external",
         "blob.core.windows.net"
       ],
       "metadata": {
