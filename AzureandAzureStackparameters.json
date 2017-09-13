@@ -3,7 +3,7 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "windowsOSVersion": {
-      "value": "2012-R2-Datacenter"
+      "value": "2016-Datacenter"
     }
   }
 }
